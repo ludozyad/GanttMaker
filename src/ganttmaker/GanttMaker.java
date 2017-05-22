@@ -58,13 +58,19 @@ public class GanttMaker extends Application  {
         Button buttonMakeXML = new Button("Stworz XML");
         Button buttonTakeXML = new Button("Odtworz XML");
         Button buttonCreateChart = new Button("Rysuj Wykres");
+        Button buttonChildTask = new Button("Zadanie Potomek");
 
         Tasks tasks = new Tasks();
         tasks.setTasks(new ArrayList<>());
         
         BorderPane mainPane = new BorderPane();
         
-
+        ListView listView = new ListView();
+        listView.setMaxHeight(100);
+        
+       
+       
+        
         
         EventHandler<javafx.scene.input.MouseEvent> addTaskEvent = 
         new EventHandler<javafx.scene.input.MouseEvent>() { 
@@ -75,17 +81,15 @@ public class GanttMaker extends Application  {
                 try {
                 
                 
-               String types = typeList.getSelectionModel().getSelectedItem();
-                    
+               String types = typeList.getSelectionModel().getSelectedItem();  
                Task tasktemp = new Task();
                tasktemp.setLength(Integer.parseInt(wpiszDlugosc.getText()));
                tasktemp.setName(wpiszNazwe.getText()); 
                tasktemp.setTypeOfLength(types.toString());
                tasks.getTasks().add(tasktemp);
-             
+               wpiszDlugosc.clear();
+               wpiszNazwe.clear();
                
-                wpiszDlugosc.clear();
-                wpiszNazwe.clear();
                 } catch (NumberFormatException ex) {
                     System.out.println("Jakis blad ");
                 }
@@ -107,6 +111,12 @@ public class GanttMaker extends Application  {
                     System.out.println(tasks.getTasks().get(i).getName());
                     System.out.println();
                 }
+                
+                 listView.getItems().clear();
+                 for(int i=0; i<tasks.getTasks().size(); i++){
+                     listView.getItems().add(tasks.getTasks().get(i).getName());
+                 }
+        System.out.println();
         } 
         };  
          
@@ -146,7 +156,7 @@ public class GanttMaker extends Application  {
                 try {
                 JAXBContext jaxbContext = JAXBContext.newInstance(Tasks.class);
                 Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-                Tasks tasksm = (Tasks)jaxbUnmarshaller.unmarshal(new File("c:/temp/employees.xml"));
+                Tasks tasksm = (Tasks)jaxbUnmarshaller.unmarshal(new File("c:/temp/tasks.xml"));
                 // int size = 0;
                //  int index = 0; 
                
@@ -239,6 +249,30 @@ public class GanttMaker extends Application  {
                     width=tasks.getTasks().get(i).getLength()*60*24;
                 }
                    
+               if (tasks.getTasks().get(i).getIsParallel() == true)
+               {
+                 int prevWidth = 0;  
+                   if("Minut".equals(tasks.getTasks().get(i-1).getTypeOfLength()))
+                   {
+                       prevWidth = tasks.getTasks().get(i-1).getLength();
+                   }
+                   else if("Godzin".equals(tasks.getTasks().get(i-1).getTypeOfLength()))
+                   {
+                       prevWidth = tasks.getTasks().get(i-1).getLength()*60;
+                   }
+                   else if("Dni".equals(tasks.getTasks().get(i-1).getTypeOfLength()))
+                   {
+                       prevWidth = tasks.getTasks().get(i-1).getLength()*60*24;
+                   }
+                   
+                   Rectangle rect = new Rectangle(x - prevWidth ,y,width,height);
+                   rect.setFill(Color.CADETBLUE);
+                    anchorPane.getChildren().add(rect);
+                    anchorPane.getChildren().add(new Text(x - prevWidth + width,y+15,tasks.getTasks().get(i).getName()+ " - " + tasks.getTasks().get(i).getLength()+ " " + tasks.getTasks().get(i).getTypeOfLength()));
+               }
+               else
+               {
+
                // width=tasks.getTasks().get(i).getLength();
                 Rectangle rect = new Rectangle(x,y,width,height);
                 rect.setFill(Color.CADETBLUE);
@@ -247,22 +281,103 @@ public class GanttMaker extends Application  {
                 anchorPane.getChildren().add(new Text(x+width,y+15,tasks.getTasks().get(i).getName()+ " - " + tasks.getTasks().get(i).getLength()+ " " + tasks.getTasks().get(i).getTypeOfLength()));
                    
 
-                y=y+20;    
+                y=y+2;    
                 x=x+width;
                }
-            mainPane.setCenter(scrollpane);
+               y=y+20;   
+               mainPane.setCenter(scrollpane);
               
                
         }
-        };
+        }};
+        
+        /*
+        
+         String types = typeList.getSelectionModel().getSelectedItem();
+                    
+               Task tasktemp = new Task();
+               tasktemp.setLength(Integer.parseInt(wpiszDlugosc.getText()));
+               tasktemp.setName(wpiszNazwe.getText()); 
+               tasktemp.setTypeOfLength(types.toString());
+               tasks.getTasks().add(tasktemp);
+        
+        
+        */
+        
+        
+        EventHandler<javafx.scene.input.MouseEvent> childNode = 
+        new EventHandler<javafx.scene.input.MouseEvent>() { 
+        @Override 
+        public void handle(javafx.scene.input.MouseEvent e) { 
+               
+            if((!wpiszDlugosc.getText().isEmpty()&&!wpiszNazwe.getText().isEmpty()&&!typeList.getSelectionModel().isEmpty()))
+            {
+                System.out.println("All gra");
+                
+                if(!listView.getSelectionModel().isEmpty())
+                {
+                    int index = listView.getSelectionModel().getSelectedIndex();
+                    System.out.println(index);
+                    for (int i=0; i<tasks.getTasks().size(); i++)
+                    {
+                        if(i == index)
+                        {
+                            if(index+1 != tasks.getTasks().size())
+                            {
+                                System.out.println("Jest nastepny");
+                                Task tasktemp = new Task();
+                                String types = typeList.getSelectionModel().getSelectedItem();
+                                tasktemp.setLength(Integer.parseInt(wpiszDlugosc.getText()));
+                                tasktemp.setName(wpiszNazwe.getText());
+                                tasktemp.setTypeOfLength(types.toString());
+                                tasks.getTasks().add(index+1, tasktemp);
+                                tasktemp.setIsParallel(true);
+                                wpiszDlugosc.clear();
+                                wpiszNazwe.clear();
+                            }
+                            else
+                            {
+                                System.out.println("Jest ostatni");
+                                String types = typeList.getSelectionModel().getSelectedItem();
+                                Task tasktemp = new Task();
+                                tasktemp.setLength(Integer.parseInt(wpiszDlugosc.getText()));
+                                tasktemp.setName(wpiszNazwe.getText());
+                                tasktemp.setTypeOfLength(types.toString());
+                                tasktemp.setIsParallel(true);
+                                tasks.getTasks().add(tasktemp);
+                                wpiszDlugosc.clear();
+                                wpiszNazwe.clear();
+                            }
+                        }
+                    }
+                   
+                }
+                else 
+                {
+                    System.out.println("Nie zaznaczyles zadania");
+                }
+            }
+            else 
+            {
+                System.out.println("cos nie gra");
+            }
+            // zadanie bedzie polegało na tym,że znajdujemy zaznaczony indeks, wszystkie zadania po tym indeksie
+            // przesuwamy o 1 pozycje do przodu a następnie po wybranym indeksie wstawiamy to co wpisaliśmy
+            // należy zmodyfikować funkcje rysującą tak, ażeby zadanie z flagą isParallel było rysowane równolegle
+            // z poprzednim, a zadanie następujące po nim rozpoczynało się kiedy skończy się zadanie poprzednie.
+           String wybor = listView.getSelectionModel().getSelectedItems().toString();
+           
+        }
+        };  
 
         buttonOk.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, addTaskEvent);
         buttonAll.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, checkTasksEvent);
         buttonMakeXML.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, createXML);
         buttonTakeXML.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, takeXML);
         buttonCreateChart.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, createChart);
+        buttonChildTask.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, childNode);
         
-        VBox vBoxLeft = new VBox(textName,wpiszNazwe,textDlugosc,wpiszDlugosc,textType,typeList,buttonOk,buttonAll,buttonMakeXML,buttonTakeXML,buttonCreateChart);
+        VBox vBoxLeft = new VBox(textName,wpiszNazwe,textDlugosc,wpiszDlugosc,textType,typeList,buttonOk,buttonAll,buttonMakeXML,buttonTakeXML,buttonCreateChart,listView,buttonChildTask);
         //VBox vBoxRight = new VBox();
 
         
@@ -274,7 +389,7 @@ public class GanttMaker extends Application  {
         primaryStage.setScene(scene);
         primaryStage.setHeight(600);
         primaryStage.setWidth(1000);
-        primaryStage.setResizable(false);
+        primaryStage.setResizable(true);
         primaryStage.show();
         
         }
@@ -329,14 +444,17 @@ class Task
     private int length;
     private String typeOfLength;
     private String name;
+    private boolean isParallel = false;
     
     public int getLength() {return length;}
     public String getTypeOfLength() {return typeOfLength;}
     public String getName() {return name;}
+    public boolean getIsParallel(){return isParallel;}
     public void setLength(int l){length=l;}
     public void setTypeOfLength(String t){typeOfLength=t;}
     public void setName(String n){name=n;}
-
+    public void setIsParallel(boolean ip){isParallel=ip;}
+   
 }
 
 @XmlRootElement(name = "Zadania")
@@ -354,8 +472,9 @@ class Tasks
         this.zadania = zadania;
     }
 }
-
-
+// tableview - wybieranie zadan do ktorych dodajemy  przed/po (wiele zadan moze byc wykonywany rownoczesnie)
+//
+// siatka interwaly czasowe
   
 
        
