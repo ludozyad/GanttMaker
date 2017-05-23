@@ -58,6 +58,7 @@ public class GanttMaker extends Application  {
         Button buttonMakeXML = new Button("Stworz XML");
         Button buttonTakeXML = new Button("Odtworz XML");
         Button buttonCreateChart = new Button("Rysuj Wykres");
+        Button buttonRemoveTask = new Button("Usun zadanie");
         Button buttonChildTask = new Button("Zadanie Potomek");
 
         Tasks tasks = new Tasks();
@@ -226,7 +227,9 @@ public class GanttMaker extends Application  {
         @Override 
         public void handle(javafx.scene.input.MouseEvent e) { 
                
-          
+              
+               List<Integer> tab = new ArrayList();
+               
                int x=100,y=100;
                int width=0;
                int height=20;
@@ -251,40 +254,59 @@ public class GanttMaker extends Application  {
                    
                if (tasks.getTasks().get(i).getIsParallel() == true)
                {
-                 int prevWidth = 0;  
-                   if("Minut".equals(tasks.getTasks().get(i-1).getTypeOfLength()))
-                   {
-                       prevWidth = tasks.getTasks().get(i-1).getLength();
-                   }
-                   else if("Godzin".equals(tasks.getTasks().get(i-1).getTypeOfLength()))
-                   {
-                       prevWidth = tasks.getTasks().get(i-1).getLength()*60;
-                   }
-                   else if("Dni".equals(tasks.getTasks().get(i-1).getTypeOfLength()))
-                   {
-                       prevWidth = tasks.getTasks().get(i-1).getLength()*60*24;
-                   }
                    
-                   Rectangle rect = new Rectangle(x - prevWidth ,y,width,height);
-                   rect.setFill(Color.CADETBLUE);
+                   //////////////////////
+                   
+                        int prevWidth=0;
+                        if("Minut".equals(tasks.getTasks().get(i-1).getTypeOfLength()))
+                        {
+                            prevWidth=tasks.getTasks().get(i-1).getLength();
+                        }
+                        else if("Godzin".equals(tasks.getTasks().get(i-1).getTypeOfLength()))
+                        {
+                             prevWidth=tasks.getTasks().get(i-1).getLength()*60;
+                        }
+                        else if("Dni".equals(tasks.getTasks().get(i-1).getTypeOfLength()))
+                        {
+                            prevWidth=tasks.getTasks().get(i-1).getLength()*60*24;
+                        }
+                        System.out.println(prevWidth);
+                    
+                        //////////////////////
+                   
+                   
+                   if(tasks.getTasks().get(i-1).getIsParallel()==true)
+                   {   
+                   int size = tab.size();
+                   System.out.println(size);
+                   Rectangle rect = new Rectangle(tab.get(size-1),y,width,height);
+                   rect.setFill(Color.CADETBLUE);   
+                   anchorPane.getChildren().add(rect);
+                   anchorPane.getChildren().add(new Text(tab.get(size-1)+width,y+15,tasks.getTasks().get(i).getName()+ " - " + tasks.getTasks().get(i).getLength()+ " " + tasks.getTasks().get(i).getTypeOfLength()));
+                  // jesli poprzedni byl normalnym - przesuwamy o jego dlugosc
+                  // jesli poprzedni byl parrallel - 
+                   }
+                   else //gdy poprzedni jest zwykly
+                    {
+                        
+                    tab.add(x-prevWidth);
+                    int size = tab.size();
+                    System.out.println(size);
+                    Rectangle rect = new Rectangle(tab.get(size-1),y,width,height);
+                    rect.setFill(Color.CADETBLUE);
                     anchorPane.getChildren().add(rect);
-                    anchorPane.getChildren().add(new Text(x - prevWidth + width,y+15,tasks.getTasks().get(i).getName()+ " - " + tasks.getTasks().get(i).getLength()+ " " + tasks.getTasks().get(i).getTypeOfLength()));
+                    anchorPane.getChildren().add(new Text(tab.get(size-1)+width,y+15,tasks.getTasks().get(i).getName()+ " - " + tasks.getTasks().get(i).getLength()+ " " + tasks.getTasks().get(i).getTypeOfLength()));
+                    }
                }
                else
                {
-
-               // width=tasks.getTasks().get(i).getLength();
-                Rectangle rect = new Rectangle(x,y,width,height);
-                rect.setFill(Color.CADETBLUE);
-                anchorPane.getChildren().add(rect);
-                
-                anchorPane.getChildren().add(new Text(x+width,y+15,tasks.getTasks().get(i).getName()+ " - " + tasks.getTasks().get(i).getLength()+ " " + tasks.getTasks().get(i).getTypeOfLength()));
-                   
-
-                y=y+2;    
-                x=x+width;
+                   Rectangle rect = new Rectangle(x,y,width,height);
+                   rect.setFill(Color.CADETBLUE);
+                   anchorPane.getChildren().add(rect);
+                   anchorPane.getChildren().add(new Text(x+width,y+15,tasks.getTasks().get(i).getName()+ " - " + tasks.getTasks().get(i).getLength()+ " " + tasks.getTasks().get(i).getTypeOfLength())); 
+                   x=x+width;
                }
-               y=y+20;   
+               y=y+22;   
                mainPane.setCenter(scrollpane);
               
                
@@ -302,6 +324,26 @@ public class GanttMaker extends Application  {
                tasks.getTasks().add(tasktemp);
         
         
+        */
+        
+        /*
+        
+        EventHandler<javafx.scene.input.MouseEvent> removeTaskEvent = 
+        new EventHandler<javafx.scene.input.MouseEvent>() { 
+        @Override 
+        public void handle(javafx.scene.input.MouseEvent e) { 
+               
+            int index = listView.getSelectionModel().getSelectedIndex();
+            int size = tasks.getTasks().size();
+            tasks.getTasks().remove(index);
+          
+            if(index != size - 1)
+            {
+                // usunac wszystkie az napodka nie potomka
+           
+            }
+        } 
+        };  
         */
         
         
@@ -370,6 +412,7 @@ public class GanttMaker extends Application  {
         }
         };  
 
+    //    buttonRemoveTask.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, removeTaskEvent);
         buttonOk.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, addTaskEvent);
         buttonAll.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, checkTasksEvent);
         buttonMakeXML.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, createXML);
