@@ -142,10 +142,9 @@ public class GanttMaker extends Application  {
             try {
                 JAXBContext jaxbContext = JAXBContext.newInstance(Tasks.class);
                 Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-                jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-                               
+                jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);                               
                 jaxbMarshaller.marshal(tasks, System.out);
-                jaxbMarshaller.marshal(tasks, new File("C:\\Users\\blaze\\Documents\\NetBeansProjects\\GanntMaker\\tasks.xml"));
+                jaxbMarshaller.marshal(tasks, new File("tasks.xml"));
                           
             } catch (JAXBException ex) {
                System.out.println("Problem z plikiem XML");
@@ -163,7 +162,7 @@ public class GanttMaker extends Application  {
                 try {
                 JAXBContext jaxbContext = JAXBContext.newInstance(Tasks.class);
                 Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-                Tasks tasksm = (Tasks)jaxbUnmarshaller.unmarshal(new File("C:\\Users\\blaze\\Documents\\NetBeansProjects\\GanntMaker\\tasks.xml"));
+                Tasks tasksm = (Tasks)jaxbUnmarshaller.unmarshal(new File("tasks.xml"));
                
                int listSize = tasks.getTasks().size();
                int xmlSize = tasksm.getTasks().size();
@@ -239,20 +238,28 @@ public class GanttMaker extends Application  {
                int height=20;
                anchorPane.getChildren().clear();
                int tasksSize = tasks.getTasks().size();
+               Double overallengthdouble = 0.0;
                
                for(int i=0;i<tasksSize;i++)
                {    
                 if("Minut".equals(tasks.getTasks().get(i).getTypeOfLength()))
                 {
                     width=tasks.getTasks().get(i).getLength();
+                    if(tasks.getTasks().get(i).getIsParallel() == false)
+                        overallengthdouble = overallengthdouble + tasks.getTasks().get(i).getLength()/60.0;
                 }
                 else if("Godzin".equals(tasks.getTasks().get(i).getTypeOfLength()))
                 {
                      width=tasks.getTasks().get(i).getLength()*60;
+                     if(tasks.getTasks().get(i).getIsParallel() == false)
+                        overallengthdouble = overallengthdouble + tasks.getTasks().get(i).getLength();
                 }
                 else if("Dni".equals(tasks.getTasks().get(i).getTypeOfLength()))
                 {
                     width=tasks.getTasks().get(i).getLength()*60*24;
+                    if(tasks.getTasks().get(i).getIsParallel() == false)
+                        overallengthdouble = overallengthdouble + tasks.getTasks().get(i).getLength()*24.0;
+                    
                 }
                    
                if (tasks.getTasks().get(i).getIsParallel() == true)
@@ -274,7 +281,6 @@ public class GanttMaker extends Application  {
                    if(tasks.getTasks().get(i-1).getIsParallel()==true)
                    {   
                         int size = tab.size();
-                        System.out.println(size);
                         Rectangle rect = new Rectangle(tab.get(size-1),y,width,height);
                         rect.setFill(Color.CADETBLUE);   
                         anchorPane.getChildren().add(rect);
@@ -284,7 +290,6 @@ public class GanttMaker extends Application  {
                     {
                         tab.add(x-prevWidth);
                         int size = tab.size();
-                        System.out.println(size);
                         Rectangle rect = new Rectangle(tab.get(size-1),y,width,height);
                         rect.setFill(Color.CADETBLUE);
                         anchorPane.getChildren().add(rect);
@@ -301,22 +306,10 @@ public class GanttMaker extends Application  {
                }
                y=y+22;       
                }
-               int overallength = 0;
-               for (int j = 0; j < tasksSize; j++)
-               {
-                        if("Minut".equals(tasks.getTasks().get(j).getTypeOfLength()))
-                        {
-                            overallength = overallength + tasks.getTasks().get(j).getLength()/60;
-                        }
-                        else if("Godzin".equals(tasks.getTasks().get(j).getTypeOfLength()))
-                        {
-                             overallength = overallength + tasks.getTasks().get(j).getLength();
-                        }
-                        else if("Dni".equals(tasks.getTasks().get(j).getTypeOfLength()))
-                        {
-                            overallength = overallength + tasks.getTasks().get(j).getLength()*24;
-                        }
-               }
+               
+               int overallength = overallengthdouble.intValue() + 1;
+               System.out.println(overallengthdouble);
+               System.out.println(overallength);
                int start = 100;
                for (int k = 0; k < overallength + 1; k++)
                {
@@ -484,13 +477,13 @@ class Task
 class Tasks
 {
     @XmlElement(name = "Zadanie")
-    private List<Task> zadania = null;
+    private List<Task> tasks = null;
  
     public List<Task> getTasks() {
-        return zadania;
+        return tasks;
     }
  
-    public void setTasks(List<Task> zadania) {
-        this.zadania = zadania;
+    public void setTasks(List<Task> tasks) {
+        this.tasks = tasks;
     }
 }
